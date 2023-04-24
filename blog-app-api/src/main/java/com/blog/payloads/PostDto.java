@@ -1,8 +1,11 @@
 package com.blog.payloads;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import com.blog.entities.Category;
+import com.blog.entities.Comment;
 import com.blog.entities.User;
 
 import lombok.AllArgsConstructor;
@@ -23,4 +26,6 @@ public class PostDto {
 	private Date addedDate;
 	private CategoryDto category;
 	private UserDTO user;
+	
+	private List<CommentDto> comments = new ArrayList<>();
 }

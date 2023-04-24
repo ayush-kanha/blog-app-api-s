@@ -1,8 +1,10 @@
 package com.blog.controllers;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,11 +16,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.blog.payloads.ApiResponse;
 import com.blog.payloads.PostDto;
 import com.blog.payloads.PostResponse;
 import com.blog.repositories.PostRepo;
+import com.blog.services.impl.FileServiceImpl;
 import com.blog.services.impl.PostServiceImpl;
 
 @RestController
@@ -27,6 +31,12 @@ public class PostController {
 
 	@Autowired
 	private PostServiceImpl postServiceImpl;
+	
+	@Autowired
+	private FileServiceImpl fileServiceImpl;
+	
+	@Value("${project.image}")
+	private String imageUploadPath;
 	
 	//CREATE A POST BY FOR USER AND CATEGORY 
 	
@@ -120,6 +130,37 @@ public class PostController {
 		return new ResponseEntity<>(result,HttpStatus.OK);
 	}
 	
+	
+	//Upload a image
+	@PostMapping("/upload/image/post/{postId}")
+	public ResponseEntity<PostDto> uploadFile(@RequestParam("image") MultipartFile image,
+													@PathVariable("postId") int postId
+												  ) throws IOException
+	{
+		// null;
+		System.out.println("Path : "+imageUploadPath);
+		
+		
+		PostDto postDto = postServiceImpl.getPostByPostId(postId);
+		
+		String uploadedFile = fileServiceImpl.uploadFile(imageUploadPath, image);
+		
+		postDto.setImageName(uploadedFile);
+		
+		PostDto updatePost = postServiceImpl.updatePost(postDto, postId);
+		
+		
+//		try {
+//			uploadedFile = fileServiceImpl.uploadFile(imageUploadPath, image);
+//		} catch (IOException e) {
+//			//e.printStackTrace();
+//			return new ResponseEntity<ApiResponse>(new ApiResponse(
+//					"File uploading encountered some problem",false),
+//						HttpStatus.INTERNAL_SERVER_ERROR);
+//		}
+		
+		return new ResponseEntity<>(updatePost,HttpStatus.OK);
+	}
 	
 	
 }

@@ -54,7 +54,7 @@ public class PostServiceImpl implements PostService {
 		Post post = mapper.map(postDto, Post.class);
 		post.setImageName("default.png");
 		post.setAddedDate(new Date());
-		post.setCategory(null);
+		//post.setCategory(null);
 		post.setCategory(category);
 		post.setUser(user);		
 		
