@@ -16,9 +16,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.blog.security.CustomUserDetailsService;
+import com.blog.security.JwtAuthenticationEntryPoint;
+import com.blog.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,6 +31,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	@Autowired
 	private CustomUserDetailsService customUserDetailsService;
 	
+	@Autowired
+	private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+	
+	@Autowired
+	private JwtAuthenticationFilter jwtAuthenticationFilter;
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		
@@ -34,10 +44,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 			.csrf()
 			.disable()
 			.authorizeHttpRequests()
+			.antMatchers("/api/v1/auth/login").permitAll()
 			.anyRequest()
 			.authenticated()
 			.and()
-			.httpBasic();
+			.exceptionHandling()
+			.authenticationEntryPoint(this.jwtAuthenticationEntryPoint)
+			.and()
+			.sessionManagement()
+			.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		
+		http.addFilterBefore(this.jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 	}	
 	
 	@Bean
@@ -51,6 +68,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		
 		auth.userDetailsService(this.customUserDetailsService).passwordEncoder(passwordEncoder());
+	}
+	
+	@Bean  
+	@Override
+	public AuthenticationManager authenticationManagerBean() throws Exception {
+		// TODO Auto-generated method stub
+		return super.authenticationManagerBean();
 	}
 	
 	
